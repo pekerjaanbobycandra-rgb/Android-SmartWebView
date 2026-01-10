@@ -15,6 +15,10 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
+      # LANGKAH BARU: Menginstal Build Tools agar zipalign tersedia
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
@@ -30,6 +34,8 @@ jobs:
           alias: ${{ secrets.ALIAS }}
           keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: "34.0.0" # Menggunakan versi yang lebih baru dan stabil
 
       - name: Upload Signed APK
         uses: actions/upload-artifact@v4
