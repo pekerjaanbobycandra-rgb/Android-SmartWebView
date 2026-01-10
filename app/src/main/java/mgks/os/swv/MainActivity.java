@@ -1,20 +1,10 @@
 package mgks.os.swv;
 
+import mgks.os.swv.R; // TAMBAHKAN BARIS INI UNTUK MEMPERBAIKI ERROR
+
 /*
   Smart WebView v8
   https://github.com/mgks/Android-SmartWebView
-
-  A modern, open-source WebView wrapper for building advanced hybrid Android apps.
-  Native features, modular plugins, and full customisation—built for developers.
-
-  - Documentation: https://mgks.github.io/Android-SmartWebView/documentation  
-  - Plugins: https://mgks.github.io/Android-SmartWebView/documentation/plugins  
-  - Discussions: https://github.com/mgks/Android-SmartWebView/discussions  
-  - Sponsor the Project: https://github.com/sponsors/mgks  
-
-  MIT License — https://opensource.org/licenses/MIT  
-
-  Mentioning Smart WebView in your project helps others find it and keeps the dev loop alive.
 */
 
 import android.Manifest;
