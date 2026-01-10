@@ -1,4 +1,4 @@
-name: Build App Debug
+name: Build App Release
 on:
   workflow_dispatch:
 
@@ -18,11 +18,21 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug
+      - name: Build Release APK
+        run: ./gradlew assembleRelease
 
-      - name: Upload APK
+      - name: Sign APK
+        uses: r0adkll/sign-android-release@v1
+        id: sign_app
+        with:
+          releaseDirectory: app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Upload Signed APK
         uses: actions/upload-artifact@v4
         with:
-          name: SmartWebView-Debug-File
-          path: app/build/outputs/apk/debug/*.apk
+          name: SIKAP-DESA-CLURING-Release
+          path: ${{ steps.sign_app.outputs.signedReleaseFile }}
