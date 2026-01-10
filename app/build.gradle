@@ -1,5 +1,5 @@
 /*
-  Smart WebView v8 - Fixed for Gradle 8+
+  Smart WebView v8 - Updated to SDK 36
 */
 
 plugins {
@@ -19,16 +19,20 @@ def getSwvProperties() {
 def swvProps = getSwvProperties()
 
 android {
-    // Bagian ini sangat penting untuk memperbaiki error "Package R does not exist"
+    // Namespace tetap mgks.os.swv agar R package terbaca
     namespace = "mgks.os.swv" 
-    compileSdk = 35
+    
+    // Dinaikkan ke 36 karena library browser 1.9.0 memintanya
+    compileSdk = 36
 
     defaultConfig {
-        // Samakan applicationId dengan namespace agar konsisten
         applicationId = "mgks.os.swv"
         
         minSdk = swvProps.getProperty('build.sdk.min', '24').toInteger()
-        targetSdk = 35
+        
+        // Target SDK juga dinaikkan ke 36 agar sinkron
+        targetSdk = 36
+        
         versionCode = swvProps.getProperty('build.version.code', '1').toInteger()
         versionName = swvProps.getProperty('build.version.name', '1.0')
         
