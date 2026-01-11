@@ -1090,17 +1090,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             paintRect.setAlpha(160);
             canvas.drawRect(0, canvas.getHeight() - 380, canvas.getWidth(), canvas.getHeight(), paintRect);
 
-            // 4. DOWNLOAD & GAMBAR PETA OSM (VERSI PALING STABIL)
+            // 4. PERCOBAAN PAKAI GOOGLE MAPS
             try {
-                // Server OpenStreetMap Jerman (Gratis & Stabil)
-                String mapUrl = "https://staticmap.openstreetmap.de/staticmap.php?center=" + lat + "," + lon + "&zoom=16&size=300x300&markers=" + lat + "," + lon + ",ol-marker";
+                // Menggunakan URL Google Maps Static
+                String mapUrl = "https://maps.googleapis.com/maps/api/staticmap?center=" + lat + "," + lon + "&zoom=15&size=300x300&sensor=false";
                 
                 java.net.URL url = new java.net.URL(mapUrl);
                 java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
-                // Menambahkan identitas agar tidak diblokir server peta
-                conn.setRequestProperty("User-Agent", "Mozilla/5.0"); 
-                conn.setConnectTimeout(10000); // Tunggu maksimal 10 detik
-                conn.setReadTimeout(10000);
+                conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+                conn.setConnectTimeout(15000); // Tambah waktu tunggu jadi 15 detik
+                conn.setReadTimeout(15000);
                 conn.connect();
 
                 java.io.InputStream input = conn.getInputStream();
@@ -1108,10 +1107,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                 if (mapBitmap != null) {
                     // Gambar peta di pojok kanan bawah
-                    canvas.drawBitmap(mapBitmap, canvas.getWidth() - 350, canvas.getHeight() - 380, null);
+                    // Saya sesuaikan posisinya agar lebih presisi
+                    canvas.drawBitmap(mapBitmap, canvas.getWidth() - 350, canvas.getHeight() - 400, null);
+                } else {
+                    Log.e("MAP_ERROR", "Bitmap kosong, gagal decode gambar dari Google");
                 }
             } catch (Exception e) {
-                Log.e("MAP_ERROR", "Gagal download: " + e.getMessage());
+                Log.e("MAP_ERROR", "Gagal total download: " + e.getMessage());
             }
 
             // 5. Gambar Teks Keterangan
