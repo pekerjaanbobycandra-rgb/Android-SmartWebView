@@ -1090,26 +1090,28 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             paintRect.setAlpha(160);
             canvas.drawRect(0, canvas.getHeight() - 380, canvas.getWidth(), canvas.getHeight(), paintRect);
 
-            // 4. DOWNLOAD & GAMBAR PETA OSM (VERSI STABIL)
+            // 4. DOWNLOAD & GAMBAR PETA OSM (VERSI PALING STABIL)
             try {
-                // Menggunakan server OpenStreetMap Jerman yang lebih stabil dan gratis
+                // Server OpenStreetMap Jerman (Gratis & Stabil)
                 String mapUrl = "https://staticmap.openstreetmap.de/staticmap.php?center=" + lat + "," + lon + "&zoom=16&size=300x300&markers=" + lat + "," + lon + ",ol-marker";
                 
                 java.net.URL url = new java.net.URL(mapUrl);
-                java.net.HttpURLConnection connection = (java.net.HttpURLConnection) url.openConnection();
-                connection.setDoInput(true);
-                connection.connect();
-                
-                java.io.InputStream input = connection.getInputStream();
+                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+                // Menambahkan identitas agar tidak diblokir server peta
+                conn.setRequestProperty("User-Agent", "Mozilla/5.0"); 
+                conn.setConnectTimeout(10000); // Tunggu maksimal 10 detik
+                conn.setReadTimeout(10000);
+                conn.connect();
+
+                java.io.InputStream input = conn.getInputStream();
                 Bitmap mapBitmap = BitmapFactory.decodeStream(input);
-                
+
                 if (mapBitmap != null) {
-                    // Gambar peta di pojok kanan bawah dengan sedikit margin
+                    // Gambar peta di pojok kanan bawah
                     canvas.drawBitmap(mapBitmap, canvas.getWidth() - 350, canvas.getHeight() - 380, null);
                 }
             } catch (Exception e) {
-                // Jika internet mati/peta gagal, aplikasi tetap jalan (hanya teks saja)
-                Log.e("MAP_ERROR", "Detail: " + e.getMessage());
+                Log.e("MAP_ERROR", "Gagal download: " + e.getMessage());
             }
 
             // 5. Gambar Teks Keterangan
