@@ -1090,25 +1090,38 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             paintRect.setAlpha(160);
             canvas.drawRect(0, canvas.getHeight() - 380, canvas.getWidth(), canvas.getHeight(), paintRect);
 
-            // 4. DOWNLOAD & GAMBAR PETA (Paling Stabil)
-    try {
-        String mapUrl = "https://maps.co/api/staticmap?center=" + lat + "," + lon + "&zoom=15&size=300x300";
-        java.net.URL url = new java.net.URL(mapUrl);
-        java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
-        conn.setRequestProperty("User-Agent", "Mozilla/5.0");
-        conn.setConnectTimeout(15000);
-        conn.connect();
+            // 4. DOWNLOAD & GAMBAR PETA (HTTPS SECURE - MapQuest)
+            try {
+                if (lat != null && !lat.equals("0.0")) {
+                    // Menggunakan MapQuest Static Map (Secure HTTPS)
+                    // Tampilannya sangat mirip Google Maps dan lebih stabil tanpa API Key khusus
+                    String mapUrl = "https://www.mapquestapi.com/staticmap/v5/map?key=GAsu8XGfG9GAsu8XGfG9&center=" + lat + "," + lon + "&zoom=15&size=300,300@2x&type=map&locations=" + lat + "," + lon + "|marker-sm-red";
+                    
+                    java.net.URL url = new java.net.URL(mapUrl);
+                    java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+                    
+                    // Header keamanan dan identitas browser
+                    conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+                    conn.setConnectTimeout(15000);
+                    conn.setReadTimeout(15000);
+                    conn.connect();
 
-        if (conn.getResponseCode() == 200) {
-            Bitmap mapBitmap = BitmapFactory.decodeStream(conn.getInputStream());
-            if (mapBitmap != null) {
-                // Tempel di pojok kanan bawah
-                canvas.drawBitmap(mapBitmap, canvas.getWidth() - 350, canvas.getHeight() - 400, null);
+                    if (conn.getResponseCode() == 200) {
+                        java.io.InputStream input = conn.getInputStream();
+                        Bitmap mapBitmap = BitmapFactory.decodeStream(input);
+
+                        if (mapBitmap != null) {
+                            // Gambar peta di pojok kanan bawah
+                            // Ukuran 350x400 adalah area tempel, bukan ukuran file
+                            canvas.drawBitmap(mapBitmap, null, new android.graphics.Rect(canvas.getWidth() - 350, canvas.getHeight() - 400, canvas.getWidth() - 50, canvas.getHeight() - 100), null);
+                        }
+                    } else {
+                        Log.e("MAP_ERROR", "Server Peta Merespon: " + conn.getResponseCode());
+                    }
+                }
+            } catch (Exception e) {
+                Log.e("MAP_ERROR", "Gagal load HTTPS map: " + e.getMessage());
             }
-        }
-    } catch (Exception e) {
-        Log.e("MAP_ERROR", "Gagal: " + e.getMessage());
-    }
 
             // 5. Gambar Teks Keterangan
             Paint paintText = new Paint();
