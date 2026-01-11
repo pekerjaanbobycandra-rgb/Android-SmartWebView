@@ -8,6 +8,11 @@ import mgks.os.swv.R; // TAMBAHKAN BARIS INI UNTUK MEMPERBAIKI ERROR
 */
 
 import android.Manifest;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationManager;
+import java.util.List;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -1032,46 +1037,82 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         }
     }
+    // Fungsi untuk mengambil koordinat dan alamat asli
+    private String[] getLiveLocation() {
+        String[] locData = {"-8.411578", "114.189753", "Lokasi tidak diketahui"};
+        try {
+            LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            @SuppressLint("MissingPermission") 
+            Location loc = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            if (loc != null) {
+                locData[0] = String.valueOf(loc.getLatitude());
+                locData[1] = String.valueOf(loc.getLongitude());
+                
+                // Mengubah koordinat jadi alamat (Kecamatan/Desa)
+                Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+                List<Address> addresses = geocoder.getFromLocation(loc.getLatitude(), loc.getLongitude(), 1);
+                if (addresses != null && !addresses.isEmpty()) {
+                    String subLoc = addresses.get(0).getSubLocality(); // Desa
+                    String locName = addresses.get(0).getLocality();    // Kecamatan
+                    locData[2] = (subLoc != null ? subLoc + ", " : "") + (locName != null ? locName : "");
+                }
+            }
+        } catch (Exception e) {
+            Log.e("GPS", "Gagal ambil lokasi: " + e.getMessage());
+        }
+        return locData;
+    }
     // FUNGSI KHUSUS UNTUK MENEMPELKAN WATERMARK (PETA OSM, LOKASI, WAKTU)
     private Uri applyWatermark(Uri sourceUri) {
         try {
-            // 1. Ambil Data Lokasi & Waktu
-            String timeStamp = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss", java.util.Locale.getDefault()).format(new java.util.Date());
-            // Koordinat default (nanti akan diambil otomatis dari GPS HP)
-            String locationText = "Kecamatan Cluring, Banyuwangi"; 
-            String latLongText = "Lat: -8.411 Long: 114.189";
+            // 1. Ambil Data Real-time (GPS & Waktu)
+            String[] gps = getLiveLocation();
+            String lat = gps[0];
+            String lon = gps[1];
+            String alamat = gps[2];
+            String timeStamp = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(new Date()) + " WIB";
 
-            // 2. Load Foto Asli
+            // 2. Persiapkan Gambar
             InputStream imageStream = getContentResolver().openInputStream(sourceUri);
             Bitmap sourceBitmap = BitmapFactory.decodeStream(imageStream);
-            
-            // 3. Siapkan Kanvas untuk Menggambar
             Bitmap destBitmap = sourceBitmap.copy(Bitmap.Config.ARGB_8888, true);
-            android.graphics.Canvas canvas = new android.graphics.Canvas(destBitmap);
-            
-            // 4. Gambar Kotak Hitam Transparan (Latar Belakang Teks)
-            android.graphics.Paint paintRect = new android.graphics.Paint();
+            Canvas canvas = new Canvas(destBitmap);
+
+            // 3. Gambar Kotak Hitam di Bawah
+            Paint paintRect = new Paint();
             paintRect.setColor(Color.BLACK);
-            paintRect.setAlpha(150); // Transparansi
-            canvas.drawRect(0, canvas.getHeight() - 300, canvas.getWidth(), canvas.getHeight(), paintRect);
+            paintRect.setAlpha(160);
+            canvas.drawRect(0, canvas.getHeight() - 380, canvas.getWidth(), canvas.getHeight(), paintRect);
 
-            // 5. Gambar Teks ke Atas Foto
-            android.graphics.Paint paintText = new android.graphics.Paint();
+            // 4. DOWNLOAD & GAMBAR PETA OSM (Kotak Kecil)
+            try {
+                // Link Static Map OSM (Gratis)
+                String mapUrl = "https://static-maps.com/staticmap.php?center=" + lat + "," + lon + "&zoom=15&size=300x300&markers=" + lat + "," + lon + ",red";
+                java.net.URL url = new java.net.URL(mapUrl);
+                Bitmap mapBitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+                if (mapBitmap != null) {
+                    // Gambar peta di pojok kanan bawah
+                    canvas.drawBitmap(mapBitmap, canvas.getWidth() - 350, canvas.getHeight() - 350, null);
+                }
+            } catch (Exception e) {
+                Log.e("MAP", "Gagal muat peta: " + e.getMessage());
+            }
+
+            // 5. Gambar Teks Keterangan
+            Paint paintText = new Paint();
             paintText.setColor(Color.WHITE);
-            paintText.setTextSize(60);
+            paintText.setTextSize(canvas.getWidth() / 25f);
             paintText.setAntiAlias(true);
-            
-            canvas.drawText(locationText, 50, canvas.getHeight() - 200, paintText);
-            canvas.drawText(latLongText, 50, canvas.getHeight() - 130, paintText);
-            canvas.drawText(timeStamp, 50, canvas.getHeight() - 60, paintText);
 
-            // 6. Simpan Foto yang Sudah Distempel ke HP
-            String path = android.provider.MediaStore.Images.Media.insertImage(getContentResolver(), destBitmap, "SIKAP_" + System.currentTimeMillis(), null);
+            canvas.drawText(alamat, 50, canvas.getHeight() - 250, paintText);
+            canvas.drawText("Lat: " + lat + " Long: " + lon, 50, canvas.getHeight() - 160, paintText);
+            canvas.drawText(timeStamp, 50, canvas.getHeight() - 70, paintText);
+
+            // 6. Simpan hasil
+            String path = MediaStore.Images.Media.insertImage(getContentResolver(), destBitmap, "SIKAP_" + System.currentTimeMillis(), null);
             return Uri.parse(path);
-
         } catch (Exception e) {
-            Log.e(TAG, "Gagal membuat watermark: " + e.getMessage());
-            return sourceUri; // Jika gagal, kirim foto asli saja agar aplikasi tidak crash
+            return sourceUri;
         }
     }
 }
