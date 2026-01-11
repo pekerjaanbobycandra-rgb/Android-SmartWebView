@@ -1090,18 +1090,26 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             paintRect.setAlpha(160);
             canvas.drawRect(0, canvas.getHeight() - 380, canvas.getWidth(), canvas.getHeight(), paintRect);
 
-            // 4. DOWNLOAD & GAMBAR PETA OSM (Kotak Kecil)
+            // 4. DOWNLOAD & GAMBAR PETA OSM (VERSI STABIL)
             try {
-                // Link Static Map OSM (Gratis)
-                String mapUrl = "https://static-maps.com/staticmap.php?center=" + lat + "," + lon + "&zoom=15&size=300x300&markers=" + lat + "," + lon + ",red";
+                // Menggunakan server OpenStreetMap Jerman yang lebih stabil dan gratis
+                String mapUrl = "https://staticmap.openstreetmap.de/staticmap.php?center=" + lat + "," + lon + "&zoom=16&size=300x300&markers=" + lat + "," + lon + ",ol-marker";
+                
                 java.net.URL url = new java.net.URL(mapUrl);
-                Bitmap mapBitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+                java.net.HttpURLConnection connection = (java.net.HttpURLConnection) url.openConnection();
+                connection.setDoInput(true);
+                connection.connect();
+                
+                java.io.InputStream input = connection.getInputStream();
+                Bitmap mapBitmap = BitmapFactory.decodeStream(input);
+                
                 if (mapBitmap != null) {
-                    // Gambar peta di pojok kanan bawah
-                    canvas.drawBitmap(mapBitmap, canvas.getWidth() - 350, canvas.getHeight() - 350, null);
+                    // Gambar peta di pojok kanan bawah dengan sedikit margin
+                    canvas.drawBitmap(mapBitmap, canvas.getWidth() - 350, canvas.getHeight() - 380, null);
                 }
             } catch (Exception e) {
-                Log.e("MAP", "Gagal muat peta: " + e.getMessage());
+                // Jika internet mati/peta gagal, aplikasi tetap jalan (hanya teks saja)
+                Log.e("MAP_ERROR", "Detail: " + e.getMessage());
             }
 
             // 5. Gambar Teks Keterangan
