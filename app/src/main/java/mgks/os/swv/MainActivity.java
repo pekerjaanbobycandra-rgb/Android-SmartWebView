@@ -1090,31 +1090,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             paintRect.setAlpha(160);
             canvas.drawRect(0, canvas.getHeight() - 380, canvas.getWidth(), canvas.getHeight(), paintRect);
 
-            // 4. PERCOBAAN PAKAI GOOGLE MAPS
-            try {
-                // Menggunakan URL Google Maps Static
-                String mapUrl = "https://maps.googleapis.com/maps/api/staticmap?center=" + lat + "," + lon + "&zoom=15&size=300x300&sensor=false";
-                
-                java.net.URL url = new java.net.URL(mapUrl);
-                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
-                conn.setRequestProperty("User-Agent", "Mozilla/5.0");
-                conn.setConnectTimeout(15000); // Tambah waktu tunggu jadi 15 detik
-                conn.setReadTimeout(15000);
-                conn.connect();
+            // 4. DOWNLOAD & GAMBAR PETA (Paling Stabil)
+    try {
+        String mapUrl = "https://maps.co/api/staticmap?center=" + lat + "," + lon + "&zoom=15&size=300x300";
+        java.net.URL url = new java.net.URL(mapUrl);
+        java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+        conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+        conn.setConnectTimeout(15000);
+        conn.connect();
 
-                java.io.InputStream input = conn.getInputStream();
-                Bitmap mapBitmap = BitmapFactory.decodeStream(input);
-
-                if (mapBitmap != null) {
-                    // Gambar peta di pojok kanan bawah
-                    // Saya sesuaikan posisinya agar lebih presisi
-                    canvas.drawBitmap(mapBitmap, canvas.getWidth() - 350, canvas.getHeight() - 400, null);
-                } else {
-                    Log.e("MAP_ERROR", "Bitmap kosong, gagal decode gambar dari Google");
-                }
-            } catch (Exception e) {
-                Log.e("MAP_ERROR", "Gagal total download: " + e.getMessage());
+        if (conn.getResponseCode() == 200) {
+            Bitmap mapBitmap = BitmapFactory.decodeStream(conn.getInputStream());
+            if (mapBitmap != null) {
+                // Tempel di pojok kanan bawah
+                canvas.drawBitmap(mapBitmap, canvas.getWidth() - 350, canvas.getHeight() - 400, null);
             }
+        }
+    } catch (Exception e) {
+        Log.e("MAP_ERROR", "Gagal: " + e.getMessage());
+    }
 
             // 5. Gambar Teks Keterangan
             Paint paintText = new Paint();
