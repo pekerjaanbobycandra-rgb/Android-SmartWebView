@@ -1090,38 +1090,40 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             paintRect.setAlpha(160);
             canvas.drawRect(0, canvas.getHeight() - 380, canvas.getWidth(), canvas.getHeight(), paintRect);
 
-            // 4. DOWNLOAD & GAMBAR PETA (HTTPS SECURE - MapQuest)
-            try {
-                if (lat != null && !lat.equals("0.0")) {
-                    // Menggunakan MapQuest Static Map (Secure HTTPS)
-                    // Tampilannya sangat mirip Google Maps dan lebih stabil tanpa API Key khusus
-                    String mapUrl = "https://www.mapquestapi.com/staticmap/v5/map?key=GAsu8XGfG9GAsu8XGfG9&center=" + lat + "," + lon + "&zoom=15&size=300,300@2x&type=map&locations=" + lat + "," + lon + "|marker-sm-red";
-                    
-                    java.net.URL url = new java.net.URL(mapUrl);
-                    java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
-                    
-                    // Header keamanan dan identitas browser
-                    conn.setRequestProperty("User-Agent", "Mozilla/5.0");
-                    conn.setConnectTimeout(15000);
-                    conn.setReadTimeout(15000);
-                    conn.connect();
+            // 4. DOWNLOAD & GAMBAR PETA YANDEX (BERDASARKAN GPS HP)
+try {
+    if (lat != null && !lat.equals("0.0")) {
+        // Menggunakan Yandex Static API (Stabil & Tanpa Token)
+        // Format: ll=Longitude,Latitude  |  pt=Longitude,Latitude,pm2rdl (untuk marker)
+        String mapUrl = "https://static-maps.yandex.ru/1.x/?ll=" + lon + "," + lat + 
+                         "&z=15&l=map&size=300,300&pt=" + lon + "," + lat + ",pm2rdl";
+        
+        java.net.URL url = new java.net.URL(mapUrl);
+        java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+        
+        // Agar tidak diblokir server, kita pakai User-Agent
+        conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+        conn.setConnectTimeout(15000);
+        conn.connect();
 
-                    if (conn.getResponseCode() == 200) {
-                        java.io.InputStream input = conn.getInputStream();
-                        Bitmap mapBitmap = BitmapFactory.decodeStream(input);
-
-                        if (mapBitmap != null) {
-                            // Gambar peta di pojok kanan bawah
-                            // Ukuran 350x400 adalah area tempel, bukan ukuran file
-                            canvas.drawBitmap(mapBitmap, null, new android.graphics.Rect(canvas.getWidth() - 350, canvas.getHeight() - 400, canvas.getWidth() - 50, canvas.getHeight() - 100), null);
-                        }
-                    } else {
-                        Log.e("MAP_ERROR", "Server Peta Merespon: " + conn.getResponseCode());
-                    }
-                }
-            } catch (Exception e) {
-                Log.e("MAP_ERROR", "Gagal load HTTPS map: " + e.getMessage());
+        if (conn.getResponseCode() == 200) {
+            Bitmap mapBitmap = BitmapFactory.decodeStream(conn.getInputStream());
+            if (mapBitmap != null) {
+                // Tentukan lokasi penempelan di pojok kanan bawah foto
+                android.graphics.Rect rect = new android.graphics.Rect(
+                    canvas.getWidth() - 360, 
+                    canvas.getHeight() - 410, 
+                    canvas.getWidth() - 60, 
+                    canvas.getHeight() - 110
+                );
+                canvas.drawBitmap(mapBitmap, null, rect, null);
+                Log.d("MAP_SUCCESS", "Peta Yandex Berhasil Ditempel");
             }
+        }
+    }
+} catch (Exception e) {
+    Log.e("MAP_ERROR", "Gagal load peta: " + e.getMessage());
+}
 
             // 5. Gambar Teks Keterangan
             Paint paintText = new Paint();
