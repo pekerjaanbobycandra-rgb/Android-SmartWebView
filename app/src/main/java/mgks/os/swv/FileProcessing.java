@@ -134,11 +134,23 @@ public class FileProcessing {
 		}
 
 		Intent contentSelectionIntent = new Intent(Intent.ACTION_GET_CONTENT);
-		contentSelectionIntent.addCategory(Intent.CATEGORY_OPENABLE);
-		contentSelectionIntent.setType("*/*"); // Set general type
-		if (acceptTypes.length > 0) {
-			contentSelectionIntent.putExtra(Intent.EXTRA_MIME_TYPES, acceptTypes); // And specific types
-		}
+        contentSelectionIntent.addCategory(Intent.CATEGORY_OPENABLE);
+        
+        // --- PERBAIKAN DI SINI ---
+        contentSelectionIntent.setType("*/*"); // Selalu izinkan semua file
+        
+        // Tambahkan filter umum agar PDF, Word, dan Excel selalu terbuka
+        String[] allTypes = {
+            "image/*", 
+            "application/pdf", 
+            "application/msword", 
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "application/vnd.ms-excel",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "text/plain"
+        };
+        contentSelectionIntent.putExtra(Intent.EXTRA_MIME_TYPES, allTypes);
+        // -------------------------
 
 		if (SWVContext.ASWP_MULFILE) {
 			contentSelectionIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
