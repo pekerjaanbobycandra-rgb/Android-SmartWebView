@@ -8,6 +8,10 @@ import mgks.os.swv.R; // TAMBAHKAN BARIS INI UNTUK MEMPERBAIKI ERROR
 */
 
 import android.Manifest;
+import java.util.Locale;
+import java.util.Date;
+import java.text.SimpleDateFormat;
+import android.provider.MediaStore;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
