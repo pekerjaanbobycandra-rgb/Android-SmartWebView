@@ -137,7 +137,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
 
         super.onCreate(savedInstanceState);
-
+// IZIN DOWNLOAD PETA DI JALUR UTAMA
+        android.os.StrictMode.ThreadPolicy policy = new android.os.StrictMode.ThreadPolicy.Builder().permitAll().build();
+        android.os.StrictMode.setThreadPolicy(policy);
         // Handle splash screen
         final SplashScreen splashScreen = androidx.core.splashscreen.SplashScreen.installSplashScreen(this);
 
